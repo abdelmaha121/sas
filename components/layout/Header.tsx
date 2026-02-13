@@ -6,19 +6,23 @@ import { useAuth } from '@/lib/contexts/AuthContext';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { useTheme } from '@/lib/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Globe, User, LogOut, LogIn, UserPlus, Menu, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Moon, Sun, Globe, User, LogOut, LogIn, UserPlus, Menu, X, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
+import { useBasket } from '@/lib/contexts/BasketContext';
 
 export default function Header() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const { language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
+  const { totalItems } = useBasket();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const navItems = [
     { href: '/', label: language === 'ar' ? 'الرئيسية' : 'Home' },
+    { href: '/services', label: language === 'ar' ? 'الخدمات' : 'Services' },
     { href: '/how-it-works', label: language === 'ar' ? 'كيف يعمل' : 'How It Works' },
   ];
 
@@ -119,6 +123,20 @@ export default function Header() {
 
             {/* Auth Section */}
             {user ? (
+              <>
+                {/* Cart Icon - Only for customers */}
+                {user.role === 'customer' && (
+                  <Link href="/basket" className="relative">
+                    <Button variant="ghost" size="icon" title={language === 'ar' ? 'سلة الحجز' : 'Booking Basket'}>
+                      <ShoppingCart className="h-5 w-5" />
+                      {totalItems > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                          {totalItems}
+                        </span>
+                      )}
+                    </Button>
+                  </Link>
+                )}
               <div className="relative">
                 <Button
                   variant="ghost"
@@ -165,6 +183,7 @@ export default function Header() {
                   </>
                 )}
               </div>
+              </>
             ) : (
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" asChild>
@@ -256,6 +275,26 @@ export default function Header() {
                     <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
+
+                  {/* Mobile Cart Button - Only for customers */}
+                  {user.role === 'customer' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      asChild
+                    >
+                      <Link href="/basket" onClick={() => setMobileMenuOpen(false)}>
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        {language === 'ar' ? 'سلة الحجز' : 'Booking Basket'}
+                        {totalItems > 0 && (
+                          <Badge variant="destructive" className="mr-2 h-5 px-1.5 text-xs">
+                            {totalItems}
+                          </Badge>
+                        )}
+                      </Link>
+                    </Button>
+                  )}
 
                   <Button
                     variant="outline"
